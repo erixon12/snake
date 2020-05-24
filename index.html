@@ -1,0 +1,159 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		body {
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>>
+</body>
+<script>
+	const cnv = document.getElementById('canvas');
+	const ctx = cnv.getContext('2d');
+
+	cnv.width = window.innerWidth;
+	cnv.height = window.innerHeight;
+
+	ctx.fillStyle = 'red';
+	ctx.font = '48px monospace';
+
+	const pSize = 20;
+
+	let keys = [];
+
+	document.addEventListener('keydown', (event) => {
+		keys[event.code] = true;
+	});
+	document.addEventListener('keyup', (event) => {
+		keys[event.code] = false;
+	});
+
+	let isGameOver = false;
+
+	const collides = (a,b) => (a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y);
+
+	const apple = {
+		x: parseInt(Math.random() * (cnv.width - 20) + 10),
+		y: parseInt(Math.random() * (cnv.height - 20) + 10),
+		width: 7.5,
+		height: 7.5,
+		radius: 5,
+		counter: 0,
+		collect: function(player) {
+			if (collides(this, player)) {
+				this.x = parseInt(Math.random() * (cnv.width - 20) + 10);
+				this.y = parseInt(Math.random() * (cnv.height - 20) + 10);
+				player.length++;
+				this.counter++;
+			}
+			ctx.fillStyle = 'red';
+			ctx.beginPath();
+			ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+			ctx.fill();
+		},
+	}
+
+
+
+
+	const player = {
+		x: 0,
+		y: 0,
+		speed: 1,
+		width: pSize,
+		height: pSize,
+		dx: 20,
+		dy: 0,
+		segments: [],
+		length: 3,
+		//size: pSize,
+		move: function() {
+			//this.x += this.speed;
+			//this.y += this.speed;
+
+			if(keys['KeyW'] && this.dy == 0) {
+				this.dx = 0;
+				this.dy = -20;
+			}
+			if(keys['KeyS'] && this.dy == 0) {
+				this.dx = 0;
+				this.dy = 20;
+			}
+			if(keys['KeyD'] && this.dx == 0) {
+				this.dx = 20;
+				this.dy = 0;
+			} 
+			if(keys['KeyA'] && this.dx == 0) {
+				this.dx = -20;
+				this.dy = 0;
+			}
+
+		//	if(keys['KeyW']) ctx.fillStyle = 'red';
+		//	if(keys['KeyS']) ctx.fillStyle = 'yellow';
+		//	if(keys['KeyD']) ctx.fillStyle = 'dodgerblue';
+		//	if(keys['KeyA']) ctx.fillStyle = 'green';
+		this.x += this.dx;
+		this.y += this.dy
+
+		this.segments.unshift({x: this.x, y: this.y, width: this.width, height: this.height});
+		
+
+		if (this.segments.length > this.length) {
+			this.segments.pop();
+		};
+		ctx.fillStyle = 'green';
+
+		//ctx.fillRect(this.x, this.y, this.width, this.height)
+		for (let i = 1; i < this.segments.length; ++i) {
+			ctx.fillRect(this.segments[i].x, this.segments[i].y, this.width - 1, this.height - 1);
+			if (collides(this.segments[i], player) && !isGameOver) isGameOver = true;
+		};
+		},	
+	};
+
+	const gameOver= () => {
+		ctx.fillStyle = '#eeeeee';
+		ctx.fillRect(0, 0, cnv.width, cnv.height);
+
+		//ctx.fillStyle = '#000000';
+		//ctx.fillRect(cnv.width / 2 - 150, cnv.height / 2 - 50, 300, 100);
+
+		ctx.fillStyle = 'red';
+		ctx.fillText('game Over', cnv.width / 2 - 150, cnv.height / 2 - 50, 350, 150)
+	}
+
+	let frame = 0;
+
+	const mainloop = () => {
+		requestAnimationFrame(mainloop);
+		if (!isGameOver) {
+		frame++;
+		if (frame < 4) return;
+		frame = 0;
+		ctx.clearRect(0, 0, cnv.width, cnv.height)
+		player.move();
+		apple.collect(player);
+		ctx.fillText(apple.counter, 10, 50);
+	} else {
+		gameOver();
+	};
+};
+	requestAnimationFrame(mainloop)
+</script>
+</html>
+
+
+
+
+
+
+
+
+
+
+
